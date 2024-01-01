@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+    <title>Knapsack Calculator</title>
+  </head>
+  <style>
+    .bt {
+      background-color: #c29d59;
+      color: #ffffff;
+      position: relative;
+      display: inline-block;
+    }
+    .result-screen {
+      display: none;
+      text-align: center;
+    }
+    .result-screen.active {
+      display: block;
+    }
+  </style>
+  <body>
+    <div class="title-container">
+      <h1
+        style="
+          text-align: center;
+          margin-top: 40px;
+          padding: 20px;
+          color: #ffffff;
+        "
+        class="bg-dark"
+      >
+        Sırt Çantası Algoritması
+      </h1>
+    </div>
+
+    <div class="container">
+      <div class="col-md-8 offset-2 input-screen">
+        <div class="mb-4 mt-5">
+          <label class="control-label text-black" style="font-weight: bold"
+            >Knapsack Capacity:</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            placeholder="Knapsack Capacity:"
+            id="capacity"
+            name="capacity"
+          />
+        </div>
+        <div class="mb-4">
+          <label class="control-label text-dark" style="font-weight: bold"
+            >Number of Items:</label
+          >
+          <input
+            type="number"
+            class="form-control col-lg-10"
+            placeholder="Number of Items:"
+            id="numItems"
+            name="numItems"
+            style="position: relative; display: inline-block"
+          />
+          <button
+            id="setItemsButton"
+            class="btn bt"
+            onclick="createItemInputs()"
+          >
+            Set Items
+          </button>
+        </div>
+        <div class="mb-3"></div>
+
+        <div id="itemInputs"></div>
+        <div style="display: flex; justify-content: center; margin-top: 30px">
+          <button
+            style="margin-top: 30px"
+            id="calculateButton"
+            class="btn bt"
+            onclick="calculateKnapsack()"
+          >
+            Calculate
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-screen container" id="resultScreen">
+      <h2
+        style="
+          margin-top: 30px;
+          color: #ffff;
+          background-color: #c29d59;
+          padding: 15px;
+        "
+      >
+        Calculation Result
+      </h2>
+      <div id="result"></div>
+      <div id="details"></div>
+      <button class="btn bt mt-4" onclick="goBack()">Go Back</button>
+    </div>
+    <footer class="bg-dark" style="margin-top: 400px">
+      <p
+        style="
+          padding: 30px;
+          color: #ffffff;
+          text-align: center;
+          font-size: 24px;
+        "
+      >
+        Create By Mahmoud Alabdolla @2024
+      </p>
+    </footer>
+  </body>
+  <script>
+    function createItemInputs() {
+      var numItems = document.getElementById("numItems").value;
+      var itemInputsDiv = document.getElementById("itemInputs");
+      itemInputsDiv.innerHTML = "";
+
+      for (var i = 0; i < numItems; i++) {
+        itemInputsDiv.innerHTML +=
+          '<div class="item-input">' +
+          `<p style="margin-right:20px;font-weight: bold;">Item ${
+            i + 1
+          } : </p> ` +
+          'Value: <input style="margin-right: 50px;" class="mb-4 col-lg-4" type="number" id="value' +
+          i +
+          '"> ' +
+          'Weight: <input class="col-lg-4"  type="number" id="weight' +
+          i +
+          '">' +
+          "</div>";
+      }
+    }
+
+    function calculateKnapsack() {
+      var capacity = document.getElementById("capacity").value;
+      var numItems = document.getElementById("numItems").value;
+      var items = [];
+      var details =
+        `<p style="margin-top:15px;font-weight: bold;">You entered the Knapsack Capacity = ${capacity} </p>` +
+        '<p style="font-weight: bold;">The items you chose: </p>';
+
+      for (var i = 0; i < numItems; i++) {
+        var value = document.getElementById("value" + i).value;
+        var weight = document.getElementById("weight" + i).value;
+        items.push({ value: parseFloat(value), weight: parseFloat(weight) });
+        details +=
+          `<p style="font-weight: bold;margin:0;margin-top:15px;">Item ${
+            i + 1
+          } :</p>` +
+          "Value = " +
+          value +
+          ", Weight = " +
+          weight;
+      }
+
+      fetch("/calculate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          capacity: parseFloat(capacity),
+          items: items,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          document.getElementById(
+            "result"
+          ).innerHTML = `<p style="margin-top:15px;font-weight: bold;">Maximum value in Knapsack =  ${data.max_value}</p>`;
+          document.getElementById("details").innerHTML = details;
+          showResultScreen();
+        });
+    }
+
+    function showResultScreen() {
+      document.querySelector(".input-screen").style.display = "none";
+      document.querySelector(".result-screen").style.display = "block"; // Make sure to set display to block
+    }
+
+    function goBack() {
+      document.querySelector(".input-screen").style.display = "block";
+      document.querySelector(".result-screen").style.display = "none"; // Hide the result screen
+    }
+  </script>
+</html>
